@@ -1,4 +1,5 @@
 import { queryInstance } from "api/config";
+import axios from "axios";
 import Table from "components/Table";
 import React, { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -10,22 +11,30 @@ const Main = () => {
   const [sortDirection, setSortDirection] = useState<any>(null);
   const [eventName, setEventName] = useState<string>("");
   const [view, setView] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  const request = axios.CancelToken.source();
 
-  const fetchData = useCallback(async () => {
-    const { data } = await queryInstance.get(
-      `/api/v1/leaderboard?eventName=${eventName}&view=${view}&sortOrder=${sortDirection}`
-    );
-    setcurrentLeaderboard(data);
-    setLoading(false);
-  }, [eventName, view, sortDirection]);
+  const fetchData = async () => {
+    try {
+      const { data } = await queryInstance.get(
+        `/api/v1/leaderboard?eventName=${eventName}&view=${view}&sortOrder=${sortDirection}`,
+        { cancelToken: request.token }
+      );
+      setcurrentLeaderboard(data);
+      setLoading(false);
+    } catch (error: any) {
+      console.log(error.message);
+    }
+  };
 
   useEffect(() => {
-    fetchData();
-  }, [sortDirection, eventName, sortDirection, loading]);
+    if (loading) {
+      fetchData();
+    }
+    return () => request.cancel();
+  }, [loading]);
 
   const onSubmit = async (data: any) => {
-    console.log(data);
     setLoading(true);
     setEventName(data.eventName);
     setView(data.view);
@@ -69,6 +78,7 @@ const Main = () => {
           data={currentLeaderboard.entries}
           currentSort={sortDirection}
           setCurrentSort={setSortDirection}
+          setLoading={setLoading}
         />
       )}
       <div className="flex justify-between">

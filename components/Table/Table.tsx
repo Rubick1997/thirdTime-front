@@ -26,7 +26,8 @@ const Table: FC<{
   data: PlayerType[];
   currentSort: number;
   setCurrentSort: React.Dispatch<any>;
-}> = ({ data, currentSort, setCurrentSort }) => {
+  setLoading: React.Dispatch<any>;
+}> = ({ data, currentSort, setCurrentSort, setLoading }) => {
   return (
     <table className="w-full border-solid border-2 mb-2">
       <thead className="border-solid border-2">
@@ -36,6 +37,7 @@ const Table: FC<{
             <div
               className="cursor-pointer"
               onClick={() => {
+                setLoading(true);
                 if (currentSort === null) {
                   setCurrentSort(1);
                 } else if (currentSort === 1) {
